@@ -1,18 +1,21 @@
 package org.andrey.taskmanager.repository;
 
 import org.andrey.taskmanager.domain.task.Task;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * Интерфейс объявляющий методы для взаимодействия Task с БД
  */
-public interface TaskRepository {
-    Task createTask(Task task);
-    Task updateTask(Task task);
-    Task findTaskById(Long id);
-    List<Task> findAllTasks(int offset, int limit);
-    List<Task> findTasksByAuthor(Long authorId, int offset, int limit);
-    List<Task> findTasksByPerformer(Long performerId, int offset, int limit);
-    void deleteTaskById(Long id);
+@Repository
+public interface TaskRepository extends PagingAndSortingRepository<Task, Long>,
+        CrudRepository<Task, Long> {
+    @Query(value = "SELECT * FROM tasks WHERE author_id = :authorId", nativeQuery = true)
+    List<Task> findTasksByAuthorId(Long authorId);
+    @Query(value = "SELECT * FROM tasks WHERE performer_id = :performerId", nativeQuery = true)
+    List<Task> findTasksByPerformerId(Long performerId);
 }

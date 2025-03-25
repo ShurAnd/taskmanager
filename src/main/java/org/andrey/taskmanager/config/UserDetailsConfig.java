@@ -1,0 +1,39 @@
+package org.andrey.taskmanager.config;
+
+import org.andrey.taskmanager.repository.UserRepository;
+import org.andrey.taskmanager.security.JdbcUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Класс конфигурации для создания бинов UserDetailsService и PasswordEncoder, участвующих
+ * в обработке пользовательских логинов и паролей
+ */
+@Configuration
+public class UserDetailsConfig {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserDetailsConfig(UserRepository userRepository){
+        this.userRepository = userRepository;
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        JdbcUserDetailsService userDetailsService = new JdbcUserDetailsService(userRepository, passwordEncoder());
+        userDetailsService.saveAdmin();
+
+
+        return userDetailsService;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(7);
+    }
+}

@@ -2,8 +2,14 @@ package org.andrey.taskmanager.service;
 
 import org.andrey.taskmanager.domain.task.Task;
 import org.andrey.taskmanager.domain.task.TaskStatus;
+import org.andrey.taskmanager.exception.OperationNotAllowedException;
+import org.andrey.taskmanager.exception.TaskNotFoundException;
 import org.andrey.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,42 +22,52 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository){
+    public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> findAllTasks(int offset, int limit){
-        return taskRepository.findAllTasks(offset, limit);
+    public List<Task> findAllTasks(int offset, int limit) {
+        List<Task> tasks = taskRepository.findAll(PageRequest.of(offset, limit)).getContent();
+        return tasks;
     }
 
-    public Task findTaskById(Long id){
-        return taskRepository.findTaskById(id);
+    public Task findTaskById(Long id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Задача с идентификатором " + id + " не найдена!"));
     }
 
-    public Task createTask(Task task){
-        return taskRepository.createTask(task);
+    public Task createTask(Task task) {
+        return taskRepository.save(task);
     }
 
-    public Task updateTask(Task task){
-        return taskRepository.updateTask(task);
+    public Task updateTask(Task task) {
+        return taskRepository.save(task);
     }
 
-    public void deleteTaskById(Long id){
-        taskRepository.deleteTaskById(id);
+    public void deleteTaskById(Long id) {
+        taskRepository.deleteById(id);
     }
 
-    public Task updateTaskStatus(Long taskId, int statusCode){
+    public Task updateTaskStatus(Long taskId, int statusCode) {
         TaskStatus taskStatus = TaskStatus.fromCode(statusCode);
         Task task = findTaskById(taskId);
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context.getAuthentication().getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .noneMatch(r -> r.equals("ROLE_ADMIN")) &&
+                !task.getAuthor().getUsername().equals(context.getAuthentication().getName())){
+            throw new OperationNotAllowedException("Вы не имеете права оставлять комментарии под этой задачей");
+        }
         task.setStatus(taskStatus);
         return updateTask(task);
     }
 
-    public List<Task> findTasksByAuthor(Long authorId, int offset, int limit){
-        return taskRepository.findTasksByAuthor(authorId, offset, limit);
+    public List<Task> findTasksByAuthor(Long authorId, int offset, int limit) {
+        return taskRepository.findTasksByAuthorId(authorId);
     }
 
     public List<Task> findTasksByPerformer(Long performerId, Integer offset, Integer limit) {
-        return taskRepository.findTasksByPerformer(performerId, offset, limit);
+        return taskRepository.findTasksByPerformerId(performerId);
     }
 }

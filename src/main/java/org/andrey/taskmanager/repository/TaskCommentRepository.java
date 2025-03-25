@@ -1,16 +1,20 @@
 package org.andrey.taskmanager.repository;
 
 import org.andrey.taskmanager.domain.task.TaskComment;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * Интерфейс объявляющий методы для взаимодействия TaskComment с БД
  */
-public interface TaskCommentRepository {
-    TaskComment createComment(TaskComment comment);
-    TaskComment updateComment(TaskComment comment);
-    TaskComment findCommentById(Long id);
-    List<TaskComment> findAllCommentsForTask(Long taskId, int offset, int limit);
-    void deleteCommentById(Long id);
+@Repository
+public interface TaskCommentRepository extends PagingAndSortingRepository<TaskComment, Long>,
+        CrudRepository<TaskComment, Long> {
+    @Query(value = "SELECT * FROM comments WHERE task_id = :taskId", nativeQuery = true)
+    List<TaskComment> findCommentsByTaskId(Long taskId, Pageable pageable);
 }

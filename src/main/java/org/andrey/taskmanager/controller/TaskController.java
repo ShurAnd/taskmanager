@@ -1,12 +1,14 @@
 package org.andrey.taskmanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import org.andrey.taskmanager.domain.task.Task;
 import org.andrey.taskmanager.domain.task.TaskComment;
 import org.andrey.taskmanager.service.TaskCommentService;
 import org.andrey.taskmanager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,91 +27,111 @@ public class TaskController {
     @Autowired
     public TaskController(TaskService taskService,
                           TaskCommentService taskCommentService,
-                          ObjectMapper objectMapper){
+                          ObjectMapper objectMapper) {
         this.taskService = taskService;
         this.taskCommentService = taskCommentService;
         this.objectMapper = objectMapper;
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> findAllTasks(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                               @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception{
+                                               @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
         List<Task> result = taskService.findAllTasks(offset, limit);
         return ResponseEntity.ok()
-        .body(objectMapper.writeValueAsString(result));
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(result));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> findTaskById(@PathVariable Long id) throws Exception{
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<String> findTaskById(@PathVariable Long id) throws Exception {
         Task result = taskService.findTaskById(id);
         return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(result));
     }
 
     @PostMapping
-    public ResponseEntity<String> createTask(@RequestBody String taskJson) throws Exception{
-        Task task = objectMapper.readValue(taskJson, Task.class);
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<String> createTask(@RequestBody Task task) throws Exception {
         task = taskService.createTask(task);
         return ResponseEntity.created(null)
+                .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(task));
     }
 
     @PutMapping
-    public ResponseEntity<String> updateTask(@RequestBody String taskJson) throws Exception{
-        Task task = objectMapper.readValue(taskJson, Task.class);
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<String> updateTask(@RequestBody @Valid Task task) throws Exception {
         task = taskService.updateTask(task);
         return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(task));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTaskById(Long id) throws Exception{
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<?> deleteTaskById(@PathVariable Long id) throws Exception {
         taskService.deleteTaskById(id);
         return ResponseEntity.noContent()
                 .build();
     }
 
     @PatchMapping("/{taskId}/{statusCode}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> updateTaskStatus(@PathVariable("taskId") Long taskId,
-                                                   @PathVariable("statusCode") Integer statusCode) throws Exception{
+                                                   @PathVariable("statusCode") Integer statusCode) throws Exception {
         Task result = taskService.updateTaskStatus(taskId, statusCode);
         return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(result));
     }
 
     @PostMapping("/comment/{taskId}")
-    public ResponseEntity<String> postTaskComment(@RequestBody String commentJson) throws Exception{
-        TaskComment comment = objectMapper.readValue(commentJson, TaskComment.class);
-        comment = taskCommentService.createComment(comment);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<String> postTaskComment(@PathVariable Long taskId,
+                                                  @RequestBody String comment) throws Exception {
+        TaskComment taskComment = taskCommentService.createComment(comment, taskId);
 
         return ResponseEntity.created(null)
+                .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(comment));
     }
 
     @GetMapping("/comment/{taskId}")
-    public ResponseEntity<String> getCommentsByTask(@PathVariable Long id,
-                                                   @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception{
-        List<TaskComment> result = taskCommentService.findAllCommentsForTask(id, offset, limit);
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<String> getCommentsByTask(@PathVariable Long taskId,
+                                                    @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+                                                    @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
+        List<TaskComment> result = taskCommentService.findAllCommentsForTask(taskId, offset, limit);
 
-        return ResponseEntity.ok(objectMapper.writeValueAsString(result));
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(result));
     }
 
     @GetMapping("/author/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByAuthor(@PathVariable Long id,
                                                    @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception{
+                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
         List<Task> result = taskService.findTasksByAuthor(id, offset, limit);
 
-        return ResponseEntity.ok(objectMapper.writeValueAsString(result));
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(result));
     }
 
     @GetMapping("/performer/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByPerformer(@PathVariable Long id,
-                                                   @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception{
+                                                      @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+                                                      @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
         List<Task> result = taskService.findTasksByPerformer(id, offset, limit);
 
-        return ResponseEntity.ok(objectMapper.writeValueAsString(result));
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(result));
     }
 }
