@@ -37,15 +37,15 @@ public class JdbcUserDetailsService implements UserDetailsService {
         return sc;
     }
 
-    public void saveAdmin() {
+    public void createDefaultAdmin(String adminUsername, String adminPassword) {
         try {
-            loadUserByUsername("admin");
+            loadUserByUsername(adminUsername);
         } catch (UsernameNotFoundException ex) {
             User user = new User();
-            user.setUsername("admin");
-            user.setFirstName("admin");
-            user.setLastName("admin");
-            user.setPassword(passwordEncoder.encode("admin"));
+            user.setUsername(adminUsername);
+            user.setFirstName(adminUsername);
+            user.setLastName(adminUsername);
+            user.setPassword(passwordEncoder.encode(adminPassword));
 
             repository.save(user);
         }

@@ -88,6 +88,16 @@ public class TaskController {
                 .body(objectMapper.writeValueAsString(result));
     }
 
+    @PatchMapping("/{taskId}/performer/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<String> updateTaskPerformer(@PathVariable("taskId") Long taskId,
+                                                   @PathVariable("userId") Long userId) throws Exception {
+        Task result = taskService.updateTaskPerformer(taskId, userId);
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(result));
+    }
+
     @PostMapping("/comment/{taskId}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<String> postTaskComment(@PathVariable Long taskId,

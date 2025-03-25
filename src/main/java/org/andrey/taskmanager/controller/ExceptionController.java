@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import org.andrey.taskmanager.exception.ErrorDetails;
 import org.andrey.taskmanager.exception.OperationNotAllowedException;
+import org.andrey.taskmanager.exception.TaskNotFoundException;
+import org.andrey.taskmanager.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,7 +31,7 @@ public class ExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
-    public ErrorDetails handleValidationExceptions(
+    public ErrorDetails handleValidationException(
             ConstraintViolationException ex) {
         List<String> errors = new ArrayList<>();
         ex.getConstraintViolations().forEach((error) -> {
@@ -41,8 +43,22 @@ public class ExceptionController {
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(OperationNotAllowedException.class)
-    public ErrorDetails handleOperationNotAllowedExceptions(
+    public ErrorDetails handleOperationNotAllowedException(
             OperationNotAllowedException ex) {
+        return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ErrorDetails handleTaskNotFoundException(
+            TaskNotFoundException ex) {
+        return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ErrorDetails handleUserNotFoundException(
+            UserNotFoundException ex) {
         return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
     }
 }

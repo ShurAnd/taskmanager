@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskNotFoundException extends RuntimeException {
+public class UserNotFoundException extends RuntimeException {
     private String message = "";
 }

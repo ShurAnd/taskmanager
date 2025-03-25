@@ -3,6 +3,7 @@ package org.andrey.taskmanager.config;
 import org.andrey.taskmanager.repository.UserRepository;
 import org.andrey.taskmanager.security.JdbcUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +19,11 @@ public class UserDetailsConfig {
 
     private final UserRepository userRepository;
 
+    @Value("${admin.username:admin}")
+    private String defaultAdminUsername;
+    @Value("${admin.password:admin}")
+    private String defaultAdminPassword;
+
     @Autowired
     public UserDetailsConfig(UserRepository userRepository){
         this.userRepository = userRepository;
@@ -26,7 +32,7 @@ public class UserDetailsConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         JdbcUserDetailsService userDetailsService = new JdbcUserDetailsService(userRepository, passwordEncoder());
-        userDetailsService.saveAdmin();
+        userDetailsService.createDefaultAdmin(defaultAdminUsername, defaultAdminPassword);
 
 
         return userDetailsService;

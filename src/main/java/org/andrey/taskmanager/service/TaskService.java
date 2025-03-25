@@ -2,6 +2,7 @@ package org.andrey.taskmanager.service;
 
 import org.andrey.taskmanager.domain.task.Task;
 import org.andrey.taskmanager.domain.task.TaskStatus;
+import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.OperationNotAllowedException;
 import org.andrey.taskmanager.exception.TaskNotFoundException;
 import org.andrey.taskmanager.repository.TaskRepository;
@@ -20,10 +21,13 @@ import java.util.List;
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final UserService userService;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository,
+                       UserService userService) {
         this.taskRepository = taskRepository;
+        this.userService = userService;
     }
 
     public List<Task> findAllTasks(int offset, int limit) {
@@ -62,6 +66,13 @@ public class TaskService {
         task.setStatus(taskStatus);
         return updateTask(task);
     }
+    public Task updateTaskPerformer(Long taskId, Long userId) {
+        Task task = findTaskById(taskId);
+        User user = userService.getUserById(userId);
+        task.setTaskPerformer(user);
+        return updateTask(task);
+    }
+
 
     public List<Task> findTasksByAuthor(Long authorId, int offset, int limit) {
         return taskRepository.findTasksByAuthorId(authorId);

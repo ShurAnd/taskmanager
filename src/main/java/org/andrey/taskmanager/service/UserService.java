@@ -2,6 +2,7 @@ package org.andrey.taskmanager.service;
 
 import jakarta.transaction.Transactional;
 import org.andrey.taskmanager.domain.user.User;
+import org.andrey.taskmanager.exception.UserNotFoundException;
 import org.andrey.taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,8 +55,9 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-//        TODO исключение если пользователь не найден
-        return repository.findById(id).orElseThrow(null);
+        User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден!"));
+        user.setPassword("");
+        return user;
     }
 
 

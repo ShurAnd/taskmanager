@@ -38,7 +38,6 @@ public class Task {
      @JoinColumn(name = "author_id", referencedColumnName = "id")
      private User author = new User();
 //     Исполнитель задачи
-     @NotNull(message = "Нельзя оставлять данные о исполнителе задачи пустыми")
      @OneToOne(cascade = CascadeType.PERSIST)
      @JoinColumn(name = "performer_id", referencedColumnName = "id")
      private User taskPerformer = new User();
