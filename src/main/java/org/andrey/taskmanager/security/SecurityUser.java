@@ -1,6 +1,5 @@
 package org.andrey.taskmanager.security;
 
-import lombok.Data;
 import org.andrey.taskmanager.domain.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +24,6 @@ public record SecurityUser(User user, List<GrantedAuthority> authorityList) impl
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return user.getEmail();
     }
 }

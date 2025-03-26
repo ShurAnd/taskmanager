@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.UserNotFoundException;
 import org.andrey.taskmanager.repository.UserRepository;
+import org.andrey.taskmanager.security.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,12 +31,16 @@ public class UserService {
     public User createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user = repository.save(user);
-        repository.addAuthorityForUser("USER", user.getId());
+        repository.addAuthorityForUser(Role.USER.getCode(), user.getId());
+        user.setPassword("");
+
         return user;
     }
 
     public User updateUser(User user) {
         user = repository.save(user);
+        user.setPassword("");
+
         return user;
     }
 
@@ -43,16 +48,19 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public void deleteAuthorityForUser(String authority, Long id) {
+    public void deleteAuthorityForUser(int authority, Long id) {
         repository.deleteAuthorityForUser(authority, id);
     }
 
-    public void addAuthorityForUser(String authority, Long id) {
+    public void addAuthorityForUser(int authority, Long id) {
         repository.addAuthorityForUser(authority, id);
     }
 
     public List<User> getAllUsers() {
-        return repository.findAll();
+        List<User> result =  repository.findAll();
+        result.forEach( u -> u.setPassword(""));
+
+        return result;
     }
 
     public User getUserById(Long id) {

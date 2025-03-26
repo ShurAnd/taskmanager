@@ -45,7 +45,7 @@ public class TaskCommentService {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .noneMatch(r -> r.equals("ROLE_ADMIN")) &&
-                !task.getAuthor().getUsername().equals(context.getAuthentication().getName())) {
+                !task.getAuthor().getEmail().equals(context.getAuthentication().getName())) {
             throw new OperationNotAllowedException("Вы не имеете права оставлять комментарии под этой задачей");
         }
 

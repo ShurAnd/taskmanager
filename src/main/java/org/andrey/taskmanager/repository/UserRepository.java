@@ -19,13 +19,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findUserByUsername(String username);
 
     @Query(value = "SELECT authority FROM authorities WHERE user_id = :id", nativeQuery = true)
-    List<String> findAuthoritiesByUser(Long id);
+    List<Integer> findAuthoritiesByUser(Long id);
 
     @Modifying
     @Query(value = "INSERT INTO authorities (authority, user_id) VALUES (:authority, :id)", nativeQuery = true)
-    int addAuthorityForUser(String authority, Long id);
+    int addAuthorityForUser(int authority, Long id);
 
     @Modifying
     @Query(value = "DELETE FROM authorities WHERE authority = :authority and user_id = :id", nativeQuery = true)
-    int deleteAuthorityForUser(String authority, Long id);
+    int deleteAuthorityForUser(int authority, Long id);
 }

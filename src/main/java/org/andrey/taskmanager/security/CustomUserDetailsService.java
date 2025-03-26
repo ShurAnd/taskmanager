@@ -11,13 +11,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JdbcUserDetailsService implements UserDetailsService {
+/**
+ * Реализация UserDetailsService для аутентификации пользователей
+ */
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
 
-    public JdbcUserDetailsService(UserRepository repository,
-                                  PasswordEncoder passwordEncoder) {
+    public CustomUserDetailsService(UserRepository repository,
+                                    PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -28,10 +31,10 @@ public class JdbcUserDetailsService implements UserDetailsService {
         if (u == null) {
             throw new UsernameNotFoundException("Пользователь " + username + " не найден!");
         }
-        List<String> authorities = repository.findAuthoritiesByUser(u.getId());
+        List<Integer> authorities = repository.findAuthoritiesByUser(u.getId());
         SecurityUser sc = new SecurityUser(u, authorities
                 .stream()
-                .map(a -> new SimpleGrantedAuthority("ROLE_" + a))
+                .map(a -> new SimpleGrantedAuthority("ROLE_" + Role.fromCode(a)))
                 .collect(Collectors.toList()));
 
         return sc;
@@ -43,13 +46,13 @@ public class JdbcUserDetailsService implements UserDetailsService {
             loadUserByUsername(adminUsername);
         } catch (UsernameNotFoundException ex) {
             User user = new User();
-            user.setUsername(adminUsername);
+            user.setEmail(adminUsername);
             user.setFirstName(adminUsername);
             user.setLastName(adminUsername);
             user.setPassword(passwordEncoder.encode(adminPassword));
 
             user = repository.save(user);
-            repository.addAuthorityForUser("ADMIN", user.getId());
+            repository.addAuthorityForUser(Role.ADMIN.getCode(), user.getId());
         }
     }
 

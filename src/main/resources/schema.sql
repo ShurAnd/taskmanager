@@ -8,7 +8,7 @@ create table if not exists users(
 
 create table if not exists authorities(
     id serial unique primary key,
-    authority varchar(50) not null,
+    authority int not null,
     user_id bigint not null references users(id)
 );
 

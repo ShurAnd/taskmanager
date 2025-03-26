@@ -5,14 +5,18 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import javax.sql.DataSource;
 
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
+
 /**
- * Класс для конфигурации DataSource для JDBC
+ * Класс для конфигурации DataSource
  */
 @Configuration
 @EnableJpaRepositories(basePackages = "org.andrey.*")
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class DataSourceConfig {
 
     @Value("${db.url}")

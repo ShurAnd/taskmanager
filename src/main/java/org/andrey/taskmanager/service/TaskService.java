@@ -29,33 +29,41 @@ public class TaskService {
         this.userService = userService;
     }
 
+    /**
+     * Метод для пагинированного вывода задач
+     */
     public Page<Task> findAllTasks(int page, int size) {
-        return taskRepository.findAll(PageRequest.of(page, size));
+        Page<Task> result = taskRepository.findAll(PageRequest.of(page, size));
+        result.getContent().forEach(this::removeUserPassword);
+
+        return result;
     }
 
+    /**
+     * Метод для поиска задачи по Id
+     */
     public Task findTaskById(Long id) {
-        return taskRepository.findById(id)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Задача с идентификатором " + id + " не найдена!"));
+        removeUserPassword(task);
+
+        return task;
     }
 
-    public Task createTask(Task task) {
+    /**
+     * Метод создания новой задачи
+     */
+    public Task saveTask(Task task) {
         User taskAuthor = userService.getUserById(task.getAuthor().getId());
         task.setAuthor(taskAuthor);
         if (task.getTaskPerformer() != null) {
             User taskPerformer = userService.getUserById(task.getTaskPerformer().getId());
             task.setTaskPerformer(taskPerformer);
         }
-        return taskRepository.save(task);
-    }
+        task = taskRepository.save(task);
+        removeUserPassword(task);
 
-    public Task updateTask(Task task) {
-        User taskAuthor = userService.getUserById(task.getAuthor().getId());
-        task.setAuthor(taskAuthor);
-        if (task.getTaskPerformer() != null) {
-            User taskPerformer = userService.getUserById(task.getTaskPerformer().getId());
-            task.setTaskPerformer(taskPerformer);
-        }
-        return taskRepository.save(task);
+        return task;
     }
 
     public void deleteTaskById(Long id) {
@@ -70,25 +78,46 @@ public class TaskService {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .noneMatch(r -> r.equals("ROLE_ADMIN")) &&
-                !task.getAuthor().getUsername().equals(context.getAuthentication().getName())) {
+                !task.getAuthor().getEmail().equals(context.getAuthentication().getName())) {
             throw new OperationNotAllowedException("Вы не имеете права оставлять комментарии под этой задачей");
         }
         task.setStatus(taskStatus);
-        return updateTask(task);
+        task = saveTask(task);
+        removeUserPassword(task);
+
+        return task;
     }
 
     public Task updateTaskPerformer(Long taskId, Long userId) {
         Task task = findTaskById(taskId);
         User user = userService.getUserById(userId);
         task.setTaskPerformer(user);
-        return updateTask(task);
+        task = saveTask(task);
+        removeUserPassword(task);
+
+        return task;
     }
 
     public Page<Task> findTasksByAuthor(Long authorId, int page, int size) {
-        return taskRepository.findTasksByAuthorId(authorId, PageRequest.of(page, size));
+        Page<Task> result = taskRepository.findTasksByAuthorId(authorId, PageRequest.of(page, size));
+        result.getContent().forEach(this::removeUserPassword);
+
+        return result;
     }
 
     public Page<Task> findTasksByPerformer(Long performerId, Integer page, Integer size) {
-        return taskRepository.findTasksByPerformerId(performerId, PageRequest.of(page, size));
+        Page<Task> result = taskRepository.findTasksByPerformerId(performerId, PageRequest.of(page, size));
+        result.getContent().forEach(this::removeUserPassword);
+
+        return result;
+    }
+
+    private void removeUserPassword(Task task) {
+        if (task.getAuthor() != null) {
+            task.getAuthor().setPassword("");
+        }
+        if (task.getTaskPerformer() != null) {
+            task.getTaskPerformer().setPassword("");
+        }
     }
 }

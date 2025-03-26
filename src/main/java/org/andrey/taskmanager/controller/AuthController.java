@@ -3,6 +3,7 @@ package org.andrey.taskmanager.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.andrey.taskmanager.domain.user.RegisterUser;
 import org.andrey.taskmanager.domain.user.User;
+import org.andrey.taskmanager.domain.user.UserCreds;
 import org.andrey.taskmanager.security.jwt.JWTUtils;
 import org.andrey.taskmanager.service.UserService;
 import org.slf4j.Logger;
@@ -45,27 +46,27 @@ public class AuthController {
     }
 
     @PostMapping
-    public String authenticate(@RequestBody User user) throws AuthenticationException {
+    public String authenticate(@RequestBody UserCreds userCreds) throws AuthenticationException {
         try {
-            logger.info("{} - PASSWORD is {}", TAG, user.getPassword());
             authenticationProvider.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+                    new UsernamePasswordAuthenticationToken(userCreds.getEmail(), userCreds.getPassword())
             );
         } catch (AuthenticationException e) {
             logger.error("{} - Ошибка во время аутентификации", TAG);
             throw e;
         }
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(userCreds.getEmail());
         return jwtUtil.generateToken(userDetails.getUsername());
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterUser registerUser) throws Exception {
         User user = new User();
-        user.setUsername(registerUser.getUsername());
+        user.setEmail(registerUser.getEmail());
         user.setFirstName(registerUser.getFirstName());
         user.setLastName(registerUser.getLastName());
+        user.setPassword(registerUser.getPassword());
         user = userService.createUser(user);
         user.setPassword("");
         return ResponseEntity

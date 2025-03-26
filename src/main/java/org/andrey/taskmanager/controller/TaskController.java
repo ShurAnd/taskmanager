@@ -54,7 +54,7 @@ public class TaskController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> createTask(@RequestBody Task task) throws Exception {
-        task = taskService.createTask(task);
+        task = taskService.saveTask(task);
         return ResponseEntity.created(null)
                 .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(task));
@@ -63,7 +63,7 @@ public class TaskController {
     @PutMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> updateTask(@RequestBody @Valid Task task) throws Exception {
-        task = taskService.updateTask(task);
+        task = taskService.saveTask(task);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(task));
