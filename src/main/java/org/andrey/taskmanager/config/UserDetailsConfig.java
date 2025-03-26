@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Класс конфигурации для создания бинов UserDetailsService и PasswordEncoder, участвующих
  * в обработке пользовательских логинов и паролей
  */
 @Configuration
+@EnableTransactionManagement
 public class UserDetailsConfig {
 
     private final UserRepository userRepository;
@@ -25,7 +27,7 @@ public class UserDetailsConfig {
     private String defaultAdminPassword;
 
     @Autowired
-    public UserDetailsConfig(UserRepository userRepository){
+    public UserDetailsConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

@@ -3,7 +3,6 @@ package org.andrey.taskmanager.config;
 import org.andrey.taskmanager.repository.UserRepository;
 import org.andrey.taskmanager.security.jwt.JWTRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -45,7 +44,9 @@ public class SecurityConfig {
                         c.requestMatchers(HttpMethod.POST, "/authenticate/**").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
-                        .anyRequest().authenticated());
+                                .requestMatchers("/test/**").permitAll()
+                                .requestMatchers("/v3/**").permitAll()
+                                .anyRequest().authenticated());
 
         return http.build();
     }

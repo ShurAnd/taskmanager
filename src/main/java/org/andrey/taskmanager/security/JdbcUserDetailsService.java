@@ -37,6 +37,7 @@ public class JdbcUserDetailsService implements UserDetailsService {
         return sc;
     }
 
+
     public void createDefaultAdmin(String adminUsername, String adminPassword) {
         try {
             loadUserByUsername(adminUsername);
@@ -47,7 +48,8 @@ public class JdbcUserDetailsService implements UserDetailsService {
             user.setLastName(adminUsername);
             user.setPassword(passwordEncoder.encode(adminPassword));
 
-            repository.save(user);
+            user = repository.save(user);
+            repository.addAuthorityForUser("ADMIN", user.getId());
         }
     }
 

@@ -1,6 +1,7 @@
 package org.andrey.taskmanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.andrey.taskmanager.domain.user.RegisterUser;
 import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.security.jwt.JWTUtils;
 import org.andrey.taskmanager.service.UserService;
@@ -46,6 +47,7 @@ public class AuthController {
     @PostMapping
     public String authenticate(@RequestBody User user) throws AuthenticationException {
         try {
+            logger.info("{} - PASSWORD is {}", TAG, user.getPassword());
             authenticationProvider.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
             );
@@ -59,8 +61,16 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) throws Exception {
-        User result = userService.createUser(user);
-        return ResponseEntity.created(null).body(objectMapper.writeValueAsString(result));
+    public ResponseEntity<String> register(@RequestBody RegisterUser registerUser) throws Exception {
+        User user = new User();
+        user.setUsername(registerUser.getUsername());
+        user.setFirstName(registerUser.getFirstName());
+        user.setLastName(registerUser.getLastName());
+        user = userService.createUser(user);
+        user.setPassword("");
+        return ResponseEntity
+                .created(null)
+                .header("Content-Type", "application/json")
+                .body(objectMapper.writeValueAsString(user));
     }
 }

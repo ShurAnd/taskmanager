@@ -7,11 +7,10 @@ import org.andrey.taskmanager.domain.task.TaskComment;
 import org.andrey.taskmanager.service.TaskCommentService;
 import org.andrey.taskmanager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Контроллер для обработки запросов по API задач
@@ -35,9 +34,9 @@ public class TaskController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<String> findAllTasks(@RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                               @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
-        List<Task> result = taskService.findAllTasks(offset, limit);
+    public ResponseEntity<String> findAllTasks(@RequestParam(value = "page", defaultValue = "0") Integer offset,
+                                               @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
+        Page<Task> result = taskService.findAllTasks(offset, limit);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(result));
@@ -91,7 +90,7 @@ public class TaskController {
     @PatchMapping("/{taskId}/performer/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> updateTaskPerformer(@PathVariable("taskId") Long taskId,
-                                                   @PathVariable("userId") Long userId) throws Exception {
+                                                      @PathVariable("userId") Long userId) throws Exception {
         Task result = taskService.updateTaskPerformer(taskId, userId);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -112,9 +111,9 @@ public class TaskController {
     @GetMapping("/comment/{taskId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getCommentsByTask(@PathVariable Long taskId,
-                                                    @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                    @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
-        List<TaskComment> result = taskCommentService.findAllCommentsForTask(taskId, offset, limit);
+                                                    @RequestParam(value = "page", defaultValue = "0") Integer offset,
+                                                    @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
+        Page<TaskComment> result = taskCommentService.findAllCommentsForTask(taskId, offset, limit);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -124,9 +123,9 @@ public class TaskController {
     @GetMapping("/author/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByAuthor(@PathVariable Long id,
-                                                   @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
-        List<Task> result = taskService.findTasksByAuthor(id, offset, limit);
+                                                   @RequestParam(value = "page", defaultValue = "0") Integer offset,
+                                                   @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
+        Page<Task> result = taskService.findTasksByAuthor(id, offset, limit);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -136,9 +135,9 @@ public class TaskController {
     @GetMapping("/performer/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByPerformer(@PathVariable Long id,
-                                                      @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-                                                      @RequestParam(value = "limit", defaultValue = "10") Integer limit) throws Exception {
-        List<Task> result = taskService.findTasksByPerformer(id, offset, limit);
+                                                      @RequestParam(value = "page", defaultValue = "0") Integer offset,
+                                                      @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
+        Page<Task> result = taskService.findTasksByPerformer(id, offset, limit);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")

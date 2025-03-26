@@ -35,7 +35,8 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        return repository.save(user);
+        user = repository.save(user);
+        return user;
     }
 
     public void deleteUserById(Long id) {
@@ -55,9 +56,7 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        User user = repository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден!"));
-        user.setPassword("");
-        return user;
+        return repository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + id + " не найден!"));
     }
 
 

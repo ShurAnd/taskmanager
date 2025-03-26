@@ -7,13 +7,12 @@ import org.andrey.taskmanager.exception.OperationNotAllowedException;
 import org.andrey.taskmanager.exception.TaskNotFoundException;
 import org.andrey.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Класс сервис для выполнения операций над Task
@@ -30,9 +29,8 @@ public class TaskService {
         this.userService = userService;
     }
 
-    public List<Task> findAllTasks(int offset, int limit) {
-        List<Task> tasks = taskRepository.findAll(PageRequest.of(offset, limit)).getContent();
-        return tasks;
+    public Page<Task> findAllTasks(int page, int size) {
+        return taskRepository.findAll(PageRequest.of(page, size));
     }
 
     public Task findTaskById(Long id) {
@@ -41,10 +39,22 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        User taskAuthor = userService.getUserById(task.getAuthor().getId());
+        task.setAuthor(taskAuthor);
+        if (task.getTaskPerformer() != null) {
+            User taskPerformer = userService.getUserById(task.getTaskPerformer().getId());
+            task.setTaskPerformer(taskPerformer);
+        }
         return taskRepository.save(task);
     }
 
     public Task updateTask(Task task) {
+        User taskAuthor = userService.getUserById(task.getAuthor().getId());
+        task.setAuthor(taskAuthor);
+        if (task.getTaskPerformer() != null) {
+            User taskPerformer = userService.getUserById(task.getTaskPerformer().getId());
+            task.setTaskPerformer(taskPerformer);
+        }
         return taskRepository.save(task);
     }
 
@@ -60,12 +70,13 @@ public class TaskService {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .noneMatch(r -> r.equals("ROLE_ADMIN")) &&
-                !task.getAuthor().getUsername().equals(context.getAuthentication().getName())){
+                !task.getAuthor().getUsername().equals(context.getAuthentication().getName())) {
             throw new OperationNotAllowedException("Вы не имеете права оставлять комментарии под этой задачей");
         }
         task.setStatus(taskStatus);
         return updateTask(task);
     }
+
     public Task updateTaskPerformer(Long taskId, Long userId) {
         Task task = findTaskById(taskId);
         User user = userService.getUserById(userId);
@@ -73,12 +84,11 @@ public class TaskService {
         return updateTask(task);
     }
 
-
-    public List<Task> findTasksByAuthor(Long authorId, int offset, int limit) {
-        return taskRepository.findTasksByAuthorId(authorId);
+    public Page<Task> findTasksByAuthor(Long authorId, int page, int size) {
+        return taskRepository.findTasksByAuthorId(authorId, PageRequest.of(page, size));
     }
 
-    public List<Task> findTasksByPerformer(Long performerId, Integer offset, Integer limit) {
-        return taskRepository.findTasksByPerformerId(performerId);
+    public Page<Task> findTasksByPerformer(Long performerId, Integer page, Integer size) {
+        return taskRepository.findTasksByPerformerId(performerId, PageRequest.of(page, size));
     }
 }

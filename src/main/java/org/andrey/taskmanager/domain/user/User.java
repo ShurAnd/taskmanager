@@ -1,6 +1,5 @@
 package org.andrey.taskmanager.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,7 +31,6 @@ public class User {
     @NotBlank(message = "Нельзя не указывать логин пользователя")
     private String username = "";
     //    Пароль пользователя
-    @NotBlank(message = "Нельзя не указывать пароль пользователя")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotBlank(message = "Нельзя не указывать логин пользователя")
     private String password = "";
 }
