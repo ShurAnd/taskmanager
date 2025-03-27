@@ -68,7 +68,7 @@ public class AuthController {
         user.setLastName(registerUser.getLastName());
         user.setPassword(registerUser.getPassword());
         user = userService.createUser(user);
-        user.setPassword("");
+
         return ResponseEntity
                 .created(null)
                 .header("Content-Type", "application/json")

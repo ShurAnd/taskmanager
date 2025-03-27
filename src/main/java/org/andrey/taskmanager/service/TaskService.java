@@ -1,6 +1,8 @@
 package org.andrey.taskmanager.service;
 
+import org.andrey.taskmanager.domain.task.SearchCriteria;
 import org.andrey.taskmanager.domain.task.Task;
+import org.andrey.taskmanager.domain.task.TaskSpecification;
 import org.andrey.taskmanager.domain.task.TaskStatus;
 import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.OperationNotAllowedException;
@@ -9,10 +11,15 @@ import org.andrey.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Класс сервис для выполнения операций над Task
@@ -98,8 +105,18 @@ public class TaskService {
         return task;
     }
 
-    public Page<Task> findTasksByAuthor(Long authorId, int page, int size) {
-        Page<Task> result = taskRepository.findTasksByAuthorId(authorId, PageRequest.of(page, size));
+//    TODO добавить фильтры далее
+    public Page<Task> findTasksByAuthor(Long authorId, int page, int size, Map<String, String> filterParams) {
+        List<TaskSpecification> specs = new ArrayList<>();
+        for (String key : filterParams.keySet()) {
+            TaskSpecification spec = new TaskSpecification(new SearchCriteria(key, ":", filterParams.get(key)));
+            specs.add(spec);
+        }
+        Specification<Task> specification = Specification.where(new TaskSpecification(new SearchCriteria("author_id", ":", authorId)));
+        for (TaskSpecification ts : specs){
+            specification = specification.and(ts);
+        }
+        Page<Task> result = taskRepository.findAll(specification, PageRequest.of(page, size));
         result.getContent().forEach(this::removeUserPassword);
 
         return result;

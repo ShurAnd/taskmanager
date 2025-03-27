@@ -5,6 +5,8 @@ import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.UserNotFoundException;
 import org.andrey.taskmanager.repository.UserRepository;
 import org.andrey.taskmanager.security.Role;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.util.List;
 @Service
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
 
@@ -27,7 +31,6 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
     public User createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user = repository.save(user);

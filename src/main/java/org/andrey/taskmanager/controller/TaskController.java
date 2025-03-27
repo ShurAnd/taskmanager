@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * Контроллер для обработки запросов по API задач
  */
@@ -124,8 +126,9 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByAuthor(@PathVariable Long id,
                                                    @RequestParam(value = "page", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
-        Page<Task> result = taskService.findTasksByAuthor(id, offset, limit);
+                                                   @RequestParam(value = "size", defaultValue = "10") Integer limit,
+                                                   Map<String,String> filterParams) throws Exception {
+        Page<Task> result = taskService.findTasksByAuthor(id, offset, limit, filterParams);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")

@@ -26,11 +26,11 @@ public class User {
     @NotBlank(message = "Нельзя не указывать фамилию пользователя")
     private String lastName = "";
     //    Логин пользователя
-    @Email(message = "Неверно введен Email пользователя", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @Email(message = "Неверно введен Email пользователя", regexp = "([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)")
     @NotBlank(message = "Нельзя не указывать логин пользователя")
     @Column(unique = true, name = "username")
     private String email = "";
     //    Пароль пользователя
-    @NotBlank(message = "Нельзя не указывать логин пользователя")
+    @NotBlank(message = "Нельзя не указывать пароль пользователя")
     private String password = "";
 }
