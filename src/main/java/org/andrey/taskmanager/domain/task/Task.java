@@ -34,11 +34,11 @@ public class Task {
      private TaskPriority priority = TaskPriority.LOW;
 //     Автор создания задачи
      @NotNull(message = "Нельзя оставлять данные об авторе задачи пустыми")
-     @OneToOne(cascade = CascadeType.PERSIST)
+     @ManyToOne(cascade = CascadeType.PERSIST)
      @JoinColumn(name = "author_id", referencedColumnName = "id")
      private User author = new User();
 //     Исполнитель задачи
-     @OneToOne(cascade = CascadeType.PERSIST)
+     @ManyToOne(cascade = CascadeType.PERSIST)
      @JoinColumn(name = "performer_id", referencedColumnName = "id")
      private User taskPerformer = new User();
 }

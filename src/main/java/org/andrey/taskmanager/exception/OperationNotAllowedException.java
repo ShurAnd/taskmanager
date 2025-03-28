@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OperationNotAllowedException extends RuntimeException{
+public class OperationNotAllowedException extends RuntimeException {
     private String message;
 }

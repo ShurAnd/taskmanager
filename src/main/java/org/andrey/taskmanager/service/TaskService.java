@@ -1,9 +1,6 @@
 package org.andrey.taskmanager.service;
 
-import org.andrey.taskmanager.domain.task.SearchCriteria;
-import org.andrey.taskmanager.domain.task.Task;
-import org.andrey.taskmanager.domain.task.TaskSpecification;
-import org.andrey.taskmanager.domain.task.TaskStatus;
+import org.andrey.taskmanager.domain.task.*;
 import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.OperationNotAllowedException;
 import org.andrey.taskmanager.exception.TaskNotFoundException;
@@ -18,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -39,8 +37,9 @@ public class TaskService {
     /**
      * Метод для пагинированного вывода задач
      */
-    public Page<Task> findAllTasks(int page, int size) {
-        Page<Task> result = taskRepository.findAll(PageRequest.of(page, size));
+    public Page<Task> findAllTasks(int page, int size, Map<String, String> filters) {
+        List<Specification<Task>> specs = getFiltersForTask(filters);
+        Page<Task> result = taskRepository.findAll(Specification.allOf(specs), PageRequest.of(page, size));
         result.getContent().forEach(this::removeUserPassword);
 
         return result;
@@ -73,10 +72,16 @@ public class TaskService {
         return task;
     }
 
+    /**
+     * Метод для удаления задачи по id
+     */
     public void deleteTaskById(Long id) {
         taskRepository.deleteById(id);
     }
 
+    /**
+     * Метод для обновления статуса задачи
+     */
     public Task updateTaskStatus(Long taskId, int statusCode) {
         TaskStatus taskStatus = TaskStatus.fromCode(statusCode);
         Task task = findTaskById(taskId);
@@ -95,6 +100,9 @@ public class TaskService {
         return task;
     }
 
+    /**
+     * Метод для назначения исполнителя задачи
+     */
     public Task updateTaskPerformer(Long taskId, Long userId) {
         Task task = findTaskById(taskId);
         User user = userService.getUserById(userId);
@@ -105,15 +113,13 @@ public class TaskService {
         return task;
     }
 
-//    TODO добавить фильтры далее
+    /**
+     * Метод для поиска задач по автору задач
+     */
     public Page<Task> findTasksByAuthor(Long authorId, int page, int size, Map<String, String> filterParams) {
-        List<TaskSpecification> specs = new ArrayList<>();
-        for (String key : filterParams.keySet()) {
-            TaskSpecification spec = new TaskSpecification(new SearchCriteria(key, ":", filterParams.get(key)));
-            specs.add(spec);
-        }
-        Specification<Task> specification = Specification.where(new TaskSpecification(new SearchCriteria("author_id", ":", authorId)));
-        for (TaskSpecification ts : specs){
+        List<Specification<Task>> specs = getFiltersForTask(filterParams);
+        Specification<Task> specification = Specification.where(TaskSpecification.author(authorId));
+        for (Specification<Task> ts : specs){
             specification = specification.and(ts);
         }
         Page<Task> result = taskRepository.findAll(specification, PageRequest.of(page, size));
@@ -122,13 +128,24 @@ public class TaskService {
         return result;
     }
 
-    public Page<Task> findTasksByPerformer(Long performerId, Integer page, Integer size) {
-        Page<Task> result = taskRepository.findTasksByPerformerId(performerId, PageRequest.of(page, size));
+    /**
+     * Метод для поиска задач по исполнителю задач
+     */
+    public Page<Task> findTasksByPerformer(Long performerId, Integer page, Integer size, Map<String, String> filters) {
+        List<Specification<Task>> specs = getFiltersForTask(filters);
+        Specification<Task> specification = Specification.where(TaskSpecification.performer(performerId));
+        for (Specification<Task> ts : specs){
+            specification = specification.and(ts);
+        }
+        Page<Task> result = taskRepository.findAll(specification, PageRequest.of(page, size));
         result.getContent().forEach(this::removeUserPassword);
 
         return result;
     }
 
+    /**
+     * Метод для удаления пароля пользователя из записи задач
+     */
     private void removeUserPassword(Task task) {
         if (task.getAuthor() != null) {
             task.getAuthor().setPassword("");
@@ -136,5 +153,19 @@ public class TaskService {
         if (task.getTaskPerformer() != null) {
             task.getTaskPerformer().setPassword("");
         }
+    }
+
+    /**
+     * Метод для создания списка поисковых фильтров
+     */
+    private List<Specification<Task>> getFiltersForTask(Map<String, String> filters){
+        List<Specification<Task>> specs = new ArrayList<>();
+        for (String key : filters.keySet()){
+            if (Arrays.stream(TaskFilters.values()).map(TaskFilters::getFilterName).anyMatch(fn -> fn.equals(key))){
+                specs.add(TaskFilters.fromFilterName(key).getSpecification(filters.get(key)));
+            }
+        }
+
+        return specs;
     }
 }

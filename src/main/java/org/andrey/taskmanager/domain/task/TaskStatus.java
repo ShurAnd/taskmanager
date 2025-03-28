@@ -1,6 +1,7 @@
 package org.andrey.taskmanager.domain.task;
 
 import lombok.Getter;
+import org.andrey.taskmanager.exception.NoSuchStatusException;
 
 import java.util.Arrays;
 
@@ -16,9 +17,9 @@ public enum TaskStatus {
     // Завершена
     FINISHED(2, "Завершено");
 
-//    Код статуса задачи
+    //    Код статуса задачи
     private int code;
-//    Текстовое описание статуса задачи
+    //    Текстовое описание статуса задачи
     private String value;
 
     TaskStatus(int code, String value) {
@@ -29,10 +30,21 @@ public enum TaskStatus {
     /**
      * Метод для получения статуса задачи из кода
      */
-    public static TaskStatus fromCode(int code){
+    public static TaskStatus fromCode(int code) {
         return Arrays.stream(values())
-                .filter( c -> c.getCode() == code)
+                .filter(c -> c.getCode() == code)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Неизвестный код статуса задачи"));
+    }
+
+    /**
+     * Метод для получения приоритета задачи из строкового значения
+     */
+    public static TaskStatus fromValue(String value) {
+        try {
+            return valueOf(value.toUpperCase());
+        } catch (Exception ex) {
+            throw new NoSuchStatusException("Неверное значение для статуса задачи");
+        }
     }
 }

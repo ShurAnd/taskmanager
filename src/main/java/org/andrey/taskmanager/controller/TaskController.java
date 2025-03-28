@@ -18,7 +18,7 @@ import java.util.Map;
  * Контроллер для обработки запросов по API задач
  */
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     private final TaskService taskService;
@@ -36,9 +36,10 @@ public class TaskController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<String> findAllTasks(@RequestParam(value = "page", defaultValue = "0") Integer offset,
-                                               @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
-        Page<Task> result = taskService.findAllTasks(offset, limit);
+    public ResponseEntity<String> findAllTasks(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                               @RequestParam(value = "size", defaultValue = "10") Integer size,
+                                               @RequestParam Map<String, String> filters) throws Exception {
+        Page<Task> result = taskService.findAllTasks(page, size, filters);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(result));
@@ -113,9 +114,9 @@ public class TaskController {
     @GetMapping("/comment/{taskId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getCommentsByTask(@PathVariable Long taskId,
-                                                    @RequestParam(value = "page", defaultValue = "0") Integer offset,
-                                                    @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
-        Page<TaskComment> result = taskCommentService.findAllCommentsForTask(taskId, offset, limit);
+                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                    @RequestParam(value = "size", defaultValue = "10") Integer size) throws Exception {
+        Page<TaskComment> result = taskCommentService.findAllCommentsForTask(taskId, page, size);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -125,10 +126,10 @@ public class TaskController {
     @GetMapping("/author/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByAuthor(@PathVariable Long id,
-                                                   @RequestParam(value = "page", defaultValue = "0") Integer offset,
-                                                   @RequestParam(value = "size", defaultValue = "10") Integer limit,
-                                                   Map<String,String> filterParams) throws Exception {
-        Page<Task> result = taskService.findTasksByAuthor(id, offset, limit, filterParams);
+                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                   @RequestParam(value = "size", defaultValue = "10") Integer size,
+                                                   @RequestParam Map<String, String> filters) throws Exception {
+        Page<Task> result = taskService.findTasksByAuthor(id, page, size, filters);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -138,9 +139,10 @@ public class TaskController {
     @GetMapping("/performer/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> getTasksByPerformer(@PathVariable Long id,
-                                                      @RequestParam(value = "page", defaultValue = "0") Integer offset,
-                                                      @RequestParam(value = "size", defaultValue = "10") Integer limit) throws Exception {
-        Page<Task> result = taskService.findTasksByPerformer(id, offset, limit);
+                                                      @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                      @RequestParam(value = "size", defaultValue = "10") Integer size,
+                                                      @RequestParam Map<String, String> filters) throws Exception {
+        Page<Task> result = taskService.findTasksByPerformer(id, page, size, filters);
 
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")

@@ -2,10 +2,7 @@ package org.andrey.taskmanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
-import org.andrey.taskmanager.exception.ErrorDetails;
-import org.andrey.taskmanager.exception.OperationNotAllowedException;
-import org.andrey.taskmanager.exception.TaskNotFoundException;
-import org.andrey.taskmanager.exception.UserNotFoundException;
+import org.andrey.taskmanager.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -59,6 +56,20 @@ public class ExceptionController {
     @ExceptionHandler(UserNotFoundException.class)
     public ErrorDetails handleUserNotFoundException(
             UserNotFoundException ex) {
+        return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(NoSuchStatusException.class)
+    public ErrorDetails handleNoSuchStatusException(
+            NoSuchStatusException ex) {
+        return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(NoSuchPriorityException.class)
+    public ErrorDetails handleNoSuchPriorityException(
+            NoSuchPriorityException ex) {
         return new ErrorDetails(ex.getMessage(), LocalDateTime.now().toString());
     }
 }

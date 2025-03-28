@@ -14,15 +14,15 @@ import org.andrey.taskmanager.domain.user.User;
 @AllArgsConstructor
 @Entity(name = "comments")
 public class TaskComment {
-//    Идентификатор комментария
+    //    Идентификатор комментария
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id = 1L;
-//    идентификатор задачи к которой оставлен комментарий
+    //    идентификатор задачи к которой оставлен комментарий
     private Long taskId = -1L;
-//    Текст комментария
+    //    Текст комментария
     private String comment = "";
-//    Автор комментария
+    //    Автор комментария
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id", referencedColumnName = "id")
     private User author = new User();

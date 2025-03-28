@@ -1,6 +1,5 @@
 package org.andrey.taskmanager.service;
 
-import jakarta.transaction.Transactional;
 import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.UserNotFoundException;
 import org.andrey.taskmanager.repository.UserRepository;
@@ -41,6 +40,8 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        User oldUser = getUserById(user.getId());
+        user.setPassword(oldUser.getPassword());
         user = repository.save(user);
         user.setPassword("");
 
@@ -60,8 +61,8 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        List<User> result =  repository.findAll();
-        result.forEach( u -> u.setPassword(""));
+        List<User> result = repository.findAll();
+        result.forEach(u -> u.setPassword(""));
 
         return result;
     }
