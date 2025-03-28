@@ -38,7 +38,7 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<String> findAllTasks(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                                @RequestParam(value = "size", defaultValue = "10") Integer size,
-                                               @RequestParam Map<String, String> filters) throws Exception {
+                                               @RequestParam(required = false) Map<String, String> filters) throws Exception {
         Page<Task> result = taskService.findAllTasks(page, size, filters);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
@@ -128,7 +128,7 @@ public class TaskController {
     public ResponseEntity<String> getTasksByAuthor(@PathVariable Long id,
                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                    @RequestParam(value = "size", defaultValue = "10") Integer size,
-                                                   @RequestParam Map<String, String> filters) throws Exception {
+                                                   @RequestParam(required = false) Map<String, String> filters) throws Exception {
         Page<Task> result = taskService.findTasksByAuthor(id, page, size, filters);
 
         return ResponseEntity.ok()
@@ -141,7 +141,7 @@ public class TaskController {
     public ResponseEntity<String> getTasksByPerformer(@PathVariable Long id,
                                                       @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                       @RequestParam(value = "size", defaultValue = "10") Integer size,
-                                                      @RequestParam Map<String, String> filters) throws Exception {
+                                                      @RequestParam(required = false) Map<String, String> filters) throws Exception {
         Page<Task> result = taskService.findTasksByPerformer(id, page, size, filters);
 
         return ResponseEntity.ok()

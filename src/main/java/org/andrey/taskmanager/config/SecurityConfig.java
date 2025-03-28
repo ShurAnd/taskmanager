@@ -44,9 +44,8 @@ public class SecurityConfig {
                         c.requestMatchers(HttpMethod.POST, "/authenticate/**").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/openapi.yaml").permitAll()
                                 .requestMatchers("/v3/**").permitAll()
-                                .requestMatchers("/users/**").permitAll()
+                                .requestMatchers("/openapi.yaml").permitAll()
                                 .anyRequest().authenticated());
 
         return http.build();

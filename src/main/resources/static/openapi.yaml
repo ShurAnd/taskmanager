@@ -1,305 +1,908 @@
-openapi: 3.0.0
+openapi: "3.1.0"
 info:
-  title: Task Manager API
-  version: 1.0.0
-  description: API для управления задачами и комментариями к ним.
+  title: "OpenAPI definition"
+  version: "v0"
 servers:
-  - url: http://localhost:9090/api
+  - url: "http://127.0.0.1:8080"
+    description: "URL для менеджера задач"
 paths:
-  /tasks:
+  /api/tasks:
     get:
       summary: Получить все задачи
+      tags:
+        - "task-controller"
+      operationId: "findAllTasks"
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: page
-          in: query
+        - name: "page"
+          in: "query"
           required: false
+          description: Номер страницы для пагинации
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 0
-        - name: size
-          in: query
+        - name: "size"
+          in: "query"
           required: false
+          description: Количество задач на странице
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 10
-        - name: filters
-          in: query
+        - name: "title"
+          in: "query"
           required: false
+          description: Фильтр по названию задачи
           schema:
-            type: object
+            type: "string"
+        - name: "status"
+          in: "query"
+          required: false
+          description: Фильтр по статусу задачи
+          schema:
+            type: "string"
+            enum:
+              - "PENDING"
+              - "IN_PROCESS"
+              - "FINISHED"
+        - name: "priority"
+          in: "query"
+          required: false
+          description: Фильтр по приоритету задачи
+          schema:
+            type: "string"
+            enum:
+              - "LOW"
+              - "MEDIUM"
+              - "HIGH"
       responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
         '200':
-          description: Успешный ответ с задачами
+          description: "OK"
           content:
-            application/json:
+            '*/*':
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Task'
-    post:
-      summary: Создать новую задачу
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Task'
-      responses:
-        '201':
-          description: Задача успешно создана
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+                type: "string"
     put:
       summary: Обновить задачу
+      tags:
+        - "task-controller"
+      operationId: "updateTask"
+      security:
+        - bearerAuth: [ ]
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Task'
+              $ref: "#/components/schemas/Task"
+        required: true
       responses:
-        '200':
-          description: Задача успешно обновлена
+        '400':
+          description: "Bad Request"
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/Task'
-  /tasks/{id}:
-    get:
-      summary: Получить задачу по ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Успешный ответ с задачей
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/Task'
-    delete:
-      summary: Удалить задачу по ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Задача успешно удалена
-  /tasks/{taskId}/{statusCode}:
-    patch:
-      summary: Обновить статус задачи
-      parameters:
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: statusCode
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
+                $ref: "#/components/schemas/ErrorDetails"
         '200':
-          description: Статус задачи успешно обновлён
+          description: "OK"
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/Task'
-  /tasks/{taskId}/performer/{userId}:
-    patch:
-      summary: Обновить исполнителя задачи
-      parameters:
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Исполнитель задачи успешно обновлён
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
-  /tasks/comment/{taskId}:
+                type: "string"
     post:
-      summary: Добавить комментарий к задаче
-      parameters:
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: integer
+      summary: Создать новую задачу
+      tags:
+        - "task-controller"
+      operationId: "createTask"
+      security:
+        - bearerAuth: [ ]
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: string
+              $ref: "#/components/schemas/Task"
+        required: true
       responses:
-        '201':
-          description: Комментарий успешно добавлен
+        '400':
+          description: "Bad Request"
           content:
-            application/json:
+            '*/*':
               schema:
-                type: string
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/admin/users:
+    get:
+      summary: Получить всех пользователей
+      tags:
+        - "user-controller"
+      operationId: "findAll"
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+    put:
+      summary: Обновить данные пользователя
+      tags:
+        - "user-controller"
+      operationId: "updateOne"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /authenticate:
+    post:
+      summary: Получить JWT токен
+      tags:
+        - "auth-controller"
+      operationId: "authenticate"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreds"
+        required: true
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /authenticate/register:
+    post:
+      summary: Зарегистрировать нового пользователя
+      tags:
+        - "auth-controller"
+      operationId: "register"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUser"
+        required: true
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/tasks/comment/{taskId}:
     get:
       summary: Получить комментарии к задаче
+      tags:
+        - "task-controller"
+      operationId: "getCommentsByTask"
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: taskId
-          in: path
+        - name: "taskId"
+          in: "path"
           required: true
+          description: ID задачи
           schema:
-            type: integer
-        - name: page
-          in: query
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
           required: false
+          description: Номер страницы для пагинации
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 0
-        - name: size
-          in: query
+        - name: "size"
+          in: "query"
           required: false
+          description: Количество комментариев на странице
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 10
       responses:
-        '200':
-          description: Успешный ответ с комментариями
+        '400':
+          description: "Bad Request"
           content:
-            application/json:
+            '*/*':
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TaskComment'
-  /tasks/author/{id}:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+    post:
+      summary: Добавить комментарий к задаче
+      tags:
+        - "task-controller"
+      operationId: "postTaskComment"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "taskId"
+          in: "path"
+          required: true
+          description: ID задачи
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "string"
+        required: true
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/tasks/{taskId}/{statusCode}:
+    patch:
+      summary: Обновить статус задачи
+      tags:
+        - "task-controller"
+      operationId: "updateTaskStatus"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "taskId"
+          in: "path"
+          required: true
+          description: ID задачи
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "statusCode"
+          description: Новый статус задачи
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int32"
+            enum:
+              - 1
+              - 2
+              - 3
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/tasks/{taskId}/performer/{userId}:
+    patch:
+      summary: Назначить исполнителя задачи
+      tags:
+        - "task-controller"
+      operationId: "updateTaskPerformer"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "taskId"
+          in: "path"
+          required: true
+          description: ID задачи
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "userId"
+          in: "path"
+          required: true
+          description: ID исполнителя
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/admin/users/{userId}/authority/delete/{authorityCode}:
+    patch:
+      summary: Убрать роль у пользователя
+      tags:
+        - "user-controller"
+      operationId: "deleteAuthorityForUser"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          description: ID пользователя
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "authorityCode"
+          in: "path"
+          required: true
+          description: Код роли
+          schema:
+            type: "integer"
+            format: "int32"
+            enum:
+              - 1
+              - 2
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/admin/users/{userId}/authority/add/{authorityCode}:
+    patch:
+      summary: Добавить роль пользователю
+      tags:
+        - "user-controller"
+      operationId: "addAuthorityForUser"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          description: ID пользователя
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "authorityCode"
+          in: "path"
+          required: true
+          description: Код роли
+          schema:
+            type: "integer"
+            format: "int32"
+            enum:
+              - 1
+              - 2
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/tasks/{id}:
     get:
-      summary: Получить задачи по автору
+      summary: Получить задачу по ID
+      tags:
+        - "task-controller"
+      operationId: "findTaskById"
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: id
-          in: path
+        - name: "id"
+          in: "path"
           required: true
+          description: ID задачи
           schema:
-            type: integer
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 0
-        - name: size
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 10
-        - name: filters
-          in: query
-          required: false
-          schema:
-            type: object
+            type: "integer"
+            format: "int64"
       responses:
-        '200':
-          description: Успешный ответ с задачами
+        '400':
+          description: "Bad Request"
           content:
-            application/json:
+            '*/*':
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Task'
-  /tasks/performer/{id}:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+    delete:
+      summary: Удалить задачу по ID
+      tags:
+        - "task-controller"
+      operationId: "deleteTaskById"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: ID задачи
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/tasks/performer/{id}:
     get:
-      summary: Получить задачи по исполнителю
+      summary: Получения списка задач по исполнителю
+      tags:
+        - "task-controller"
+      operationId: "getTasksByPerformer"
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: id
-          in: path
+        - name: "id"
+          in: "path"
           required: true
+          description: ID исполнителя
           schema:
-            type: integer
-        - name: page
-          in: query
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
           required: false
+          description: Номер страницы для пагинации
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 0
-        - name: size
-          in: query
+        - name: "size"
+          in: "query"
           required: false
+          description: Количество задач на странице
           schema:
-            type: integer
+            type: "integer"
+            format: "int32"
             default: 10
-        - name: filters
-          in: query
+        - name: "title"
+          in: "query"
           required: false
+          description: Фильтр по названию задачи
           schema:
-            type: object
+            type: "string"
+        - name: "status"
+          in: "query"
+          required: false
+          description: Фильтр по статусу задачи
+          schema:
+            type: "string"
+            enum:
+              - "PENDING"
+              - "IN_PROCESS"
+              - "FINISHED"
+        - name: "priority"
+          in: "query"
+          required: false
+          description: Фильтр по приоритету задачи
+          schema:
+            type: "string"
+            enum:
+              - "LOW"
+              - "MEDIUM"
+              - "HIGH"
       responses:
-        '200':
-          description: Успешный ответ с задачами
+        '400':
+          description: "Bad Request"
           content:
-            application/json:
+            '*/*':
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Task'
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/tasks/author/{id}:
+    get:
+      summary: Получение списка задач по автору
+      tags:
+        - "task-controller"
+      operationId: "getTasksByAuthor"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: ID автора
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
+          required: false
+          description: Номер страницы для пагинации
+          schema:
+            type: "integer"
+            format: "int32"
+            default: 0
+        - name: "size"
+          in: "query"
+          required: false
+          description: Количество задач на странице
+          schema:
+            type: "integer"
+            format: "int32"
+            default: 10
+        - name: "title"
+          in: "query"
+          required: false
+          description: Фильтр по названию задачи
+          schema:
+            type: "string"
+        - name: "status"
+          in: "query"
+          required: false
+          description: Фильтр по статусу задачи
+          schema:
+            type: "string"
+            enum:
+              - "PENDING"
+              - "IN_PROCESS"
+              - "FINISHED"
+        - name: "priority"
+          in: "query"
+          required: false
+          description: Фильтр по приоритету задачи
+          schema:
+            type: "string"
+            enum:
+              - "LOW"
+              - "MEDIUM"
+              - "HIGH"
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/admin/users/{id}:
+    get:
+      summary: Получение пользователя по ID
+      tags:
+        - "user-controller"
+      operationId: "findOneById"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: ID пользователя
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/admin/users/{userId}:
+    delete:
+      summary: Удаление пользователя по ID
+      tags:
+        - "user-controller"
+      operationId: "deleteUserById"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          description: ID пользователя
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        '400':
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '401':
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        '200':
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
 components:
+  securitySchemes:
+    bearerAuth: # Определение схемы авторизации
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
   schemas:
+    ErrorDetails:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+        createdAt:
+          type: "string"
     Task:
-      type: object
+      type: "object"
       properties:
         id:
-          type: integer
+          type: "integer"
+          format: "int64"
         title:
-          type: string
+          type: "string"
         description:
-          type: string
+          type: "string"
         status:
-          type: string
-        performerId:
-          type: integer
-        authorId:
-          type: integer
-        createdDate:
-          type: string
-          format: date-time
-        updatedDate:
-          type: string
-          format: date-time
-    TaskComment:
-      type: object
+          type: "string"
+          enum:
+            - "PENDING"
+            - "IN_PROCESS"
+            - "FINISHED"
+        priority:
+          type: "string"
+          enum:
+            - "LOW"
+            - "MEDIUM"
+            - "HIGH"
+        author:
+          $ref: "#/components/schemas/User"
+        taskPerformer:
+          $ref: "#/components/schemas/User"
+      required:
+        - "author"
+        - "description"
+        - "priority"
+        - "status"
+        - "title"
+    User:
+      type: "object"
       properties:
         id:
-          type: integer
-        taskId:
-          type: integer
-        comment:
-          type: string
-        createdDate:
-          type: string
-          format: date-time
+          type: "integer"
+          format: "int64"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+        email:
+          type: "string"
+        password:
+          type: "string"
+      required:
+        - "email"
+        - "firstName"
+        - "lastName"
+        - "password"
+    UserCreds:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+        password:
+          type: "string"
+    RegisterUser:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+        password:
+          type: "string"
