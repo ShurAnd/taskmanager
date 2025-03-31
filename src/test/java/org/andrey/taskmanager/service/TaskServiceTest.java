@@ -6,6 +6,7 @@ import org.andrey.taskmanager.domain.user.User;
 import org.andrey.taskmanager.exception.OperationNotAllowedException;
 import org.andrey.taskmanager.exception.TaskNotFoundException;
 import org.andrey.taskmanager.repository.TaskRepository;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,11 +16,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -109,13 +115,16 @@ public class TaskServiceTest {
     public void updateTaskStatus_ShouldUpdateStatus_WhenUserIsAuthor() {
         SecurityContext context = mock(SecurityContext.class);
         SecurityContextHolder.setContext(context);
-        when(context.getAuthentication().getName()).thenReturn(author.getEmail());
-        when(context.getAuthentication().getAuthorities()).thenReturn(Collections.singletonList((GrantedAuthority) () -> "ROLE_USER"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(author.getEmail(),
+                author.getPassword(),
+                Lists.list(new SimpleGrantedAuthority("ROLE_USER")));
+        when(context.getAuthentication()).thenReturn(authentication);
         when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
 
         Task updatedTask = taskService.updateTaskStatus(task.getId(), TaskStatus.IN_PROCESS.getCode());
 
-        assertEquals(TaskStatus.IN_PROCESS.getCode(), updatedTask.getStatus());
+        assertEquals(TaskStatus.IN_PROCESS.getCode(), updatedTask.getStatus().getCode());
         verify(taskRepository).save(updatedTask);
     }
 
@@ -123,9 +132,12 @@ public class TaskServiceTest {
     public void updateTaskStatus_ShouldThrowOperationNotAllowedException_WhenUserIsNotAuthorOrAdmin() {
         SecurityContext context = mock(SecurityContext.class);
         SecurityContextHolder.setContext(context);
-        when(context.getAuthentication().getName()).thenReturn("someOtherUser@example.com");
-        when(context.getAuthentication().getAuthorities()).thenReturn(Collections.singletonList((GrantedAuthority) () -> "ROLE_USER"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("someOtherUser@example.com",
+                author.getPassword(),
+                Lists.list(new SimpleGrantedAuthority("ROLE_USER")));
+        when(context.getAuthentication()).thenReturn(authentication);
         when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
 
         assertThrows(OperationNotAllowedException.class, () -> taskService.updateTaskStatus(task.getId(), TaskStatus.IN_PROCESS.getCode()));
     }
